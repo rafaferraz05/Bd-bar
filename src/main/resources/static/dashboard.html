@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bar Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #242424;
+    --border: #2e2e2e;
+    --accent: #e8c97a;
+    --accent2: #c4f06a;
+    --accent3: #f06a6a;
+    --text: #f0ede6;
+    --muted: #7a7770;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* HEADER */
+  header {
+    padding: 28px 40px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo-text { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo-sub { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 2px; }
+
+  .status-badge {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted);
+  }
+  .status-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--accent2);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* MAIN LAYOUT */
+  main { padding: 32px 40px; max-width: 1400px; margin: 0 auto; }
+
+  /* SECTION TITLES */
+  .section-title {
+    font-size: 11px; font-family: 'DM Mono', monospace;
+    color: var(--accent); letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 16px; margin-top: 40px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* KPI CARDS */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .kpi-card:hover { border-color: var(--accent); }
+  .kpi-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent-color, var(--accent));
+  }
+
+  .kpi-label {
+    font-size: 10px; font-family: 'DM Mono', monospace;
+    color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .kpi-value {
+    font-size: 36px; font-weight: 800; line-height: 1;
+    color: var(--text); letter-spacing: -1px;
+  }
+  .kpi-sub {
+    font-size: 11px; color: var(--muted); margin-top: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* CHARTS GRID */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .chart-title {
+    font-size: 13px; font-weight: 700; margin-bottom: 4px;
+  }
+  .chart-desc {
+    font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace;
+    margin-bottom: 20px;
+  }
+  .chart-wrap { position: relative; height: 220px; }
+
+  /* TABLE */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .table-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .table-title { font-size: 13px; font-weight: 700; }
+  .table-desc { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .badge {
+    font-size: 10px; font-family: 'DM Mono', monospace;
+    padding: 3px 8px; border-radius: 4px; font-weight: 500;
+  }
+  .badge-green { background: rgba(196,240,106,0.12); color: var(--accent2); }
+  .badge-yellow { background: rgba(232,201,122,0.12); color: var(--accent); }
+  .badge-red { background: rgba(240,106,106,0.12); color: var(--accent3); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left; font-size: 10px; font-family: 'DM Mono', monospace;
+    color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
+    padding: 8px 12px; border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 12px; font-size: 13px; border-bottom: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* FUNC DEMO */
+  .func-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  }
+  @media (max-width: 900px) { .func-grid { grid-template-columns: 1fr; } }
+
+  .func-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .func-name {
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    color: var(--accent); margin-bottom: 6px;
+  }
+  .func-desc { font-size: 12px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+
+  .input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  input[type="text"], input[type="number"], select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    flex: 1;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+
+  button {
+    background: var(--accent);
+    color: #0f0f0f;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+  button:hover { opacity: 0.85; }
+  button.secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .result-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    min-height: 36px;
+    color: var(--accent2);
+  }
+
+  /* LOADING */
+  .loading {
+    color: var(--muted); font-family: 'DM Mono', monospace; font-size: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .spinner {
+    width: 12px; height: 12px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error { color: var(--accent3); }
+
+  /* TRIGGER LOG */
+  .log-entry {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    font-size: 12px; font-family: 'DM Mono', monospace;
+  }
+  .log-entry:last-child { border-bottom: none; }
+  .log-time { color: var(--muted); white-space: nowrap; font-size: 11px; }
+  .log-msg { color: var(--text); }
+  .log-detail { color: var(--accent); }
+
+  /* SALARY UPDATE */
+  .salary-form { display: flex; flex-direction: column; gap: 10px; }
+
+  /* REFRESH BTN */
+  .refresh-btn {
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--border); padding: 4px 10px;
+    font-size: 11px; border-radius: 4px;
+  }
+  .refresh-btn:hover { color: var(--text); border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🍺</div>
+    <div>
+      <div class="logo-text">Bar Dashboard</div>
+      <div class="logo-sub">bar_restaurante · localhost:8080</div>
+    </div>
+  </div>
+  <div class="status-badge">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">conectando...</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- KPIs -->
+  <div class="section-title">visão geral</div>
+  <div class="kpi-grid">
+    <div class="kpi-card" style="--accent-color: var(--accent)">
+      <div class="kpi-label">Clientes</div>
+      <div class="kpi-value" id="kpiClientes">—</div>
+      <div class="kpi-sub">cadastrados</div>
+    </div>
+    <div class="kpi-card" style="--accent-color: var(--accent2)">
+      <div class="kpi-label">Produtos</div>
+      <div class="kpi-value" id="kpiProdutos">—</div>
+      <div class="kpi-sub">no cardápio</div>
+    </div>
+    <div class="kpi-card" style="--accent-color: #6ab4f0">
+      <div class="kpi-label">Comandas Abertas</div>
+      <div class="kpi-value" id="kpiAbertas">—</div>
+      <div class="kpi-sub">em andamento</div>
+    </div>
+    <div class="kpi-card" style="--accent-color: var(--accent3)">
+      <div class="kpi-label">Funcionários</div>
+      <div class="kpi-value" id="kpiFuncionarios">—</div>
+      <div class="kpi-sub">ativos</div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="section-title">análise</div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">Produtos por Categoria</div>
+      <div class="chart-desc">distribuição do cardápio</div>
+      <div class="chart-wrap">
+        <canvas id="chartCategoria"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Preços dos Produtos</div>
+      <div class="chart-desc">todos os itens · view vw_produtos_acima_media destacada</div>
+      <div class="chart-wrap">
+        <canvas id="chartPrecos"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMANDAS ABERTAS (VIEW) -->
+  <div class="section-title">view · vw_comandas_abertas</div>
+  <div class="table-card">
+    <div class="table-header">
+      <div>
+        <div class="table-title">Comandas em Aberto</div>
+        <div class="table-desc">pedidos pendentes por mesa</div>
+      </div>
+      <button class="refresh-btn" onclick="loadComandasAbertas()">↻ atualizar</button>
+    </div>
+    <div id="tabelaComandasAbertas">
+      <div class="loading"><div class="spinner"></div> carregando...</div>
+    </div>
+  </div>
+
+  <!-- PRODUTOS ACIMA DA MÉDIA (VIEW) -->
+  <div class="section-title">view · vw_produtos_acima_media</div>
+  <div class="table-card">
+    <div class="table-header">
+      <div>
+        <div class="table-title">Produtos Acima da Média de Preço</div>
+        <div class="table-desc">itens premium do cardápio</div>
+      </div>
+      <button class="refresh-btn" onclick="loadProdutosMedia()">↻ atualizar</button>
+    </div>
+    <div id="tabelaProdutosMedia">
+      <div class="loading"><div class="spinner"></div> carregando...</div>
+    </div>
+  </div>
+
+  <!-- FUNÇÕES -->
+  <div class="section-title">funções SQL</div>
+  <div class="func-grid">
+
+    <div class="func-card">
+      <div class="func-name">calcular_total_comanda(id)</div>
+      <div class="func-desc">Soma preco × quantidade de todos os itens da comanda. Útil para exibir o total da conta antes do pagamento.</div>
+      <div class="input-row">
+        <input type="number" id="inputComanda" placeholder="id_comanda (ex: 1)" min="1"/>
+        <button onclick="calcularTotal()">calcular</button>
+      </div>
+      <div class="result-box" id="resultTotal">—</div>
+    </div>
+
+    <div class="func-card">
+      <div class="func-name">calcular_idade_cliente(data)</div>
+      <div class="func-desc">Calcula a idade do cliente pela data de nascimento. Útil para validação de maioridade na venda de bebidas.</div>
+      <div class="input-row">
+        <input type="number" id="inputClienteId" placeholder="id_cliente (ex: 1)" min="1"/>
+        <button onclick="calcularIdade()">calcular</button>
+      </div>
+      <div class="result-box" id="resultIdade">—</div>
+    </div>
+
+  </div>
+
+  <!-- PROCEDIMENTO + TRIGGER LOG -->
+  <div class="section-title">procedimento · trigger log</div>
+  <div class="func-grid">
+
+    <div class="func-card">
+      <div class="func-name">atualizar_salario_funcionario(cpf, valor)</div>
+      <div class="func-desc">Chama o procedimento de atualização de salário. O trigger log_alteracao_salario registra a mudança automaticamente.</div>
+      <div class="salary-form">
+        <input type="text" id="inputCPF" placeholder="CPF (somente números, ex: 11111111111)" maxlength="11"/>
+        <input type="number" id="inputSalario" placeholder="novo salário (ex: 3200.00)" step="0.01" min="0"/>
+        <div class="input-row">
+          <button onclick="atualizarSalario()" style="flex:1">atualizar salário</button>
+        </div>
+        <div class="result-box" id="resultSalario">—</div>
+      </div>
+    </div>
+
+    <div class="func-card">
+      <div class="func-name">log_salario · trigger AFTER UPDATE</div>
+      <div class="func-desc">Registros gerados automaticamente pelo trigger toda vez que um salário é alterado.</div>
+      <div id="logSalario">
+        <div class="loading"><div class="spinner"></div> carregando...</div>
+      </div>
+      <button class="secondary" style="margin-top:12px; width:100%" onclick="loadLogSalario()">↻ atualizar log</button>
+    </div>
+
+  </div>
+
+</main>
+
+<script>
+const BASE = '';  // mesmo origem, Spring Boot porta 8080
+
+// ─── STATUS ───────────────────────────────────────────────
+async function checkStatus() {
+  try {
+    const r = await fetch('/cliente');
+    if (r.ok) {
+      document.getElementById('statusDot').style.background = 'var(--accent2)';
+      document.getElementById('statusText').textContent = 'banco conectado';
+    }
+  } catch {
+    document.getElementById('statusDot').style.background = 'var(--accent3)';
+    document.getElementById('statusText').textContent = 'sem conexão';
+  }
+}
+
+// ─── KPIs ─────────────────────────────────────────────────
+async function loadKPIs() {
+  try {
+    const [clientes, produtos, comandas, funcionarios] = await Promise.all([
+      fetch('/cliente').then(r => r.json()),
+      fetch('/produto').then(r => r.json()),
+      fetch('/dashboard/comandas-abertas').then(r => r.json()).catch(() => []),
+      fetch('/dashboard/funcionarios').then(r => r.json()).catch(() => []),
+    ]);
+    document.getElementById('kpiClientes').textContent = clientes.length;
+    document.getElementById('kpiProdutos').textContent = produtos.length;
+    document.getElementById('kpiAbertas').textContent = comandas.length ?? '—';
+    document.getElementById('kpiFuncionarios').textContent = funcionarios.length ?? '—';
+    renderCharts(produtos);
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+// ─── CHARTS ───────────────────────────────────────────────
+function renderCharts(produtos) {
+  // Produtos por categoria (agrupa pelo id_categoria)
+  const catCount = {};
+  const catNames = { 1:'Bebidas', 2:'Petiscos', 3:'Pratos', 4:'Sobremesas', 5:'Drinks' };
+  produtos.forEach(p => {
+    const k = catNames[p.id_categoria] || `Cat ${p.id_categoria}`;
+    catCount[k] = (catCount[k] || 0) + 1;
+  });
+
+  new Chart(document.getElementById('chartCategoria'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(catCount),
+      datasets: [{ data: Object.values(catCount),
+        backgroundColor: ['#e8c97a','#c4f06a','#6ab4f0','#f06a6a','#a06af0'],
+        borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#7a7770', font: { family: 'DM Mono', size: 11 } } } }
+    }
+  });
+
+  // Preços
+  const avg = produtos.reduce((s,p) => s + p.preco, 0) / (produtos.length || 1);
+  new Chart(document.getElementById('chartPrecos'), {
+    type: 'bar',
+    data: {
+      labels: produtos.map(p => p.nome),
+      datasets: [{
+        data: produtos.map(p => p.preco),
+        backgroundColor: produtos.map(p => p.preco > avg ? '#e8c97a' : '#2e2e2e'),
+        borderRadius: 4, borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => `R$ ${ctx.parsed.y.toFixed(2)}` } }
+      },
+      scales: {
+        x: { ticks: { color: '#7a7770', font: { family: 'DM Mono', size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: '#7a7770', font: { family: 'DM Mono', size: 10 },
+              callback: v => `R$${v}` }, grid: { color: '#2e2e2e' } }
+      }
+    }
+  });
+}
+
+// ─── VIEW: COMANDAS ABERTAS ───────────────────────────────
+async function loadComandasAbertas() {
+  const el = document.getElementById('tabelaComandasAbertas');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div> carregando...</div>';
+  try {
+    const data = await fetch('/dashboard/comandas-abertas').then(r => r.json());
+    if (!data.length) { el.innerHTML = '<div class="loading">nenhuma comanda aberta</div>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr><th>comanda</th><th>cliente</th><th>mesa</th><th>produto</th><th>qtd</th><th>observação</th><th>funcionário</th><th>status</th></tr></thead>
+      <tbody>${data.map(r => `<tr>
+        <td>#${r.id_comanda}</td>
+        <td>${r.cliente}</td>
+        <td>${r.id_mesa}</td>
+        <td>${r.produto}</td>
+        <td>${r.quantidade}</td>
+        <td>${r.observacao || '—'}</td>
+        <td>${r.funcionario}</td>
+        <td><span class="badge badge-green">${r.status}</span></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  } catch { el.innerHTML = '<div class="loading error">endpoint /dashboard/comandas-abertas não encontrado — adicione no Java</div>'; }
+}
+
+// ─── VIEW: PRODUTOS ACIMA DA MÉDIA ───────────────────────
+async function loadProdutosMedia() {
+  const el = document.getElementById('tabelaProdutosMedia');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div> carregando...</div>';
+  try {
+    const data = await fetch('/dashboard/produtos-acima-media').then(r => r.json());
+    if (!data.length) { el.innerHTML = '<div class="loading">nenhum resultado</div>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr><th>id</th><th>produto</th><th>preço</th><th>categoria</th></tr></thead>
+      <tbody>${data.map(r => `<tr>
+        <td>${r.id_produto}</td>
+        <td>${r.produto}</td>
+        <td style="color:var(--accent)">R$ ${Number(r.preco).toFixed(2)}</td>
+        <td>${r.categoria}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  } catch { el.innerHTML = '<div class="loading error">endpoint /dashboard/produtos-acima-media não encontrado — adicione no Java</div>'; }
+}
+
+// ─── FUNÇÃO: TOTAL COMANDA ────────────────────────────────
+async function calcularTotal() {
+  const id = document.getElementById('inputComanda').value;
+  if (!id) { document.getElementById('resultTotal').textContent = 'informe o id da comanda'; return; }
+  document.getElementById('resultTotal').textContent = 'calculando...';
+  try {
+    const r = await fetch(`/dashboard/total-comanda/${id}`);
+    const txt = await r.text();
+    document.getElementById('resultTotal').textContent = `R$ ${Number(txt).toFixed(2)}`;
+  } catch { document.getElementById('resultTotal').textContent = 'endpoint /dashboard/total-comanda/{id} não encontrado'; }
+}
+
+// ─── FUNÇÃO: IDADE CLIENTE ────────────────────────────────
+async function calcularIdade() {
+  const id = document.getElementById('inputClienteId').value;
+  if (!id) { document.getElementById('resultIdade').textContent = 'informe o id do cliente'; return; }
+  document.getElementById('resultIdade').textContent = 'calculando...';
+  try {
+    const r = await fetch(`/dashboard/idade-cliente/${id}`);
+    const txt = await r.text();
+    document.getElementById('resultIdade').textContent = `${txt} anos`;
+  } catch { document.getElementById('resultIdade').textContent = 'endpoint /dashboard/idade-cliente/{id} não encontrado'; }
+}
+
+// ─── PROCEDIMENTO: ATUALIZAR SALÁRIO ─────────────────────
+async function atualizarSalario() {
+  const cpf = document.getElementById('inputCPF').value.trim();
+  const sal = document.getElementById('inputSalario').value;
+  if (!cpf || !sal) { document.getElementById('resultSalario').textContent = 'preencha CPF e salário'; return; }
+  document.getElementById('resultSalario').textContent = 'atualizando...';
+  try {
+    const r = await fetch('/dashboard/atualizar-salario', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cpf, novoSalario: parseFloat(sal) })
+    });
+    const txt = await r.text();
+    document.getElementById('resultSalario').textContent = txt;
+    loadLogSalario(); // atualiza log automaticamente
+  } catch { document.getElementById('resultSalario').textContent = 'endpoint /dashboard/atualizar-salario não encontrado'; }
+}
+
+// ─── LOG SALÁRIO (TRIGGER) ────────────────────────────────
+async function loadLogSalario() {
+  const el = document.getElementById('logSalario');
+  try {
+    const data = await fetch('/dashboard/log-salario').then(r => r.json());
+    if (!data.length) { el.innerHTML = '<div class="loading">nenhum registro de alteração ainda</div>'; return; }
+    el.innerHTML = data.slice(-5).reverse().map(l => `
+      <div class="log-entry">
+        <div class="log-time">${l.data_alteracao?.substring(0,16) || '—'}</div>
+        <div>
+          <div class="log-msg">CPF <span class="log-detail">${l.cpf_funcionario}</span></div>
+          <div class="log-msg">R$ ${Number(l.salario_antigo).toFixed(2)} → <span class="log-detail">R$ ${Number(l.salario_novo).toFixed(2)}</span></div>
+        </div>
+      </div>`).join('');
+  } catch { el.innerHTML = '<div class="loading error">endpoint /dashboard/log-salario não encontrado</div>'; }
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+checkStatus();
+loadKPIs();
+loadComandasAbertas();
+loadProdutosMedia();
+loadLogSalario();
+</script>
+</body>
+</html>
