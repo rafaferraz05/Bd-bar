@@ -51,9 +51,7 @@ http://localhost:8080/index.html
 
 Para acessar o dashboard:
 
-```text
-http://localhost:8080/dashboard.html
-```
+
 
 ## Funcionalidades
 
