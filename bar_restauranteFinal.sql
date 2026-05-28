@@ -378,20 +378,25 @@ DELIMITER ;
 CREATE OR REPLACE VIEW vw_comandas_abertas AS
 SELECT
     c.id_comanda,
-    cli.nome         AS cliente,
+    cli.nome AS cliente,
     m.id_mesa,
-    p.nome           AS produto,
+    p.nome AS produto,
     a.quantidade,
     a.observacao,
-    f.nome           AS funcionario,
+    f.nome AS funcionario,
     c.status
 FROM comanda c
-JOIN cliente    cli ON c.id_cliente  = cli.id_cliente
-JOIN mesa       m   ON c.id_mesa     = m.id_mesa
-JOIN atendimento a  ON c.id_comanda  = a.id_comanda
-JOIN produto    p   ON a.id_produto  = p.id_produto
-JOIN funcionario f  ON a.CPF         = f.CPF
-WHERE c.status = 'aberta';
+JOIN cliente cli
+    ON c.id_cliente = cli.id_cliente
+JOIN mesa m
+    ON c.id_mesa = m.id_mesa
+LEFT JOIN atendimento a
+    ON c.id_comanda = a.id_comanda
+LEFT JOIN produto p
+    ON a.id_produto = p.id_produto
+LEFT JOIN funcionario f
+    ON a.CPF = f.CPF
+WHERE c.status='aberta';
 
 
 
@@ -458,3 +463,7 @@ ON produto(id_categoria);
 
 CREATE INDEX idx_atendimento_comanda
 ON atendimento(id_comanda);
+
+SELECT COUNT(*)
+FROM comanda
+WHERE status='aberta';

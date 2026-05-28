@@ -181,12 +181,13 @@
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: var(--surface2); }
 
-  /* FUNC DEMO */
-  .func-grid {
+  /* CRUD GRID */
+  .crud-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
   }
-  @media (max-width: 900px) { .func-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .crud-grid { grid-template-columns: 1fr; } }
 
+  /* FUNC / CRUD CARDS */
   .func-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -199,8 +200,18 @@
   }
   .func-desc { font-size: 12px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
 
-  .input-row { display: flex; gap: 8px; margin-bottom: 12px; }
-  input[type="text"], input[type="number"], select {
+  .func-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  }
+  @media (max-width: 900px) { .func-grid { grid-template-columns: 1fr; } }
+
+  /* CRUD FORM STYLES */
+  .crud-form {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .input-row { display: flex; gap: 8px; margin-bottom: 4px; }
+
+  input[type="text"], input[type="number"], input[type="date"], select {
     background: var(--surface2);
     border: 1px solid var(--border);
     color: var(--text);
@@ -209,6 +220,7 @@
     font-family: 'DM Mono', monospace;
     font-size: 12px;
     flex: 1;
+    width: 100%;
     outline: none;
     transition: border-color 0.2s;
   }
@@ -233,6 +245,12 @@
     color: var(--text);
     border: 1px solid var(--border);
   }
+  button.danger {
+    background: rgba(240,106,106,0.15);
+    color: var(--accent3);
+    border: 1px solid rgba(240,106,106,0.3);
+  }
+  button.danger:hover { background: rgba(240,106,106,0.25); opacity: 1; }
 
   .result-box {
     background: var(--surface2);
@@ -261,6 +279,30 @@
 
   .error { color: var(--accent3); }
 
+  /* ACTION BUTTONS ROW */
+  .action-row {
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  }
+
+  /* TABLE ACTION BUTTONS */
+  .btn-edit {
+    background: rgba(232,201,122,0.1); color: var(--accent);
+    border: 1px solid rgba(232,201,122,0.25);
+    border-radius: 4px; padding: 3px 10px;
+    font-size: 11px; font-family: 'DM Mono', monospace; font-weight: 500;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .btn-edit:hover { background: rgba(232,201,122,0.2); opacity: 1; }
+
+  .btn-del {
+    background: rgba(240,106,106,0.1); color: var(--accent3);
+    border: 1px solid rgba(240,106,106,0.25);
+    border-radius: 4px; padding: 3px 10px;
+    font-size: 11px; font-family: 'DM Mono', monospace; font-weight: 500;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .btn-del:hover { background: rgba(240,106,106,0.2); opacity: 1; }
+
   /* TRIGGER LOG */
   .log-entry {
     display: flex; gap: 12px; align-items: flex-start;
@@ -282,6 +324,24 @@
     font-size: 11px; border-radius: 4px;
   }
   .refresh-btn:hover { color: var(--text); border-color: var(--accent); }
+
+  /* INLINE FORM TOGGLE */
+  .form-panel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .form-panel.open { display: block; }
+  .form-panel-title {
+    font-size: 11px; font-family: 'DM Mono', monospace;
+    color: var(--accent); text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .form-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 700px) { .form-fields { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -302,7 +362,9 @@
 
 <main>
 
-  <!-- KPIs -->
+  <!-- ═══════════════════════════════════════════
+       VISÃO GERAL — KPIs
+  ═══════════════════════════════════════════ -->
   <div class="section-title">visão geral</div>
   <div class="kpi-grid">
     <div class="kpi-card" style="--accent-color: var(--accent)">
@@ -327,7 +389,9 @@
     </div>
   </div>
 
-  <!-- CHARTS -->
+  <!-- ═══════════════════════════════════════════
+       ANÁLISE — GRÁFICOS
+  ═══════════════════════════════════════════ -->
   <div class="section-title">análise</div>
   <div class="charts-grid">
     <div class="chart-card">
@@ -339,15 +403,191 @@
     </div>
     <div class="chart-card">
       <div class="chart-title">Preços dos Produtos</div>
-      <div class="chart-desc">todos os itens · view vw_produtos_acima_media destacada</div>
+      <div class="chart-desc">todos os itens · produtos premium destacados</div>
       <div class="chart-wrap">
         <canvas id="chartPrecos"></canvas>
       </div>
     </div>
   </div>
 
-  <!-- COMANDAS ABERTAS (VIEW) -->
-  <div class="section-title">view · vw_comandas_abertas</div>
+  <!-- ═══════════════════════════════════════════
+       FUNCIONALIDADES — GESTÃO DE CLIENTES
+  ═══════════════════════════════════════════ -->
+  <div class="section-title">funcionalidades</div>
+
+  <div class="table-card">
+    <div class="table-header">
+      <div>
+        <div class="table-title">Gestão de Clientes</div>
+        <div class="table-desc">cadastro e gerenciamento de clientes</div>
+      </div>
+      <div class="action-row">
+        <button onclick="toggleForm('formCliente')" id="btnToggleCliente">+ cadastrar cliente</button>
+        <button class="refresh-btn" onclick="loadClientes()">↻ atualizar</button>
+      </div>
+    </div>
+
+    <!-- Formulário inline de cliente -->
+    <div class="form-panel" id="formCliente">
+      <div class="form-panel-title" id="formClienteTitle">novo cliente</div>
+      <div class="form-fields">
+        <input type="hidden" id="clienteId"/>
+        <input type="text" id="clienteNome" placeholder="nome completo"/>
+        <input type="date" id="clienteNascimento" title="data de nascimento (obrigatório)"/>
+      </div>
+      <div style="margin-top:12px;" class="action-row">
+        <button onclick="salvarCliente()" id="btnSalvarCliente">salvar cliente</button>
+        <button class="secondary" onclick="cancelarFormCliente()">cancelar</button>
+      </div>
+      <div class="result-box" id="resultCliente" style="margin-top:10px; display:none;"></div>
+    </div>
+
+    <div id="tabelaClientes">
+      <div class="loading"><div class="spinner"></div> carregando...</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       FUNCIONALIDADES — GESTÃO DE PRODUTOS
+  ═══════════════════════════════════════════ -->
+  <div class="table-card">
+    <div class="table-header">
+      <div>
+        <div class="table-title">Gestão de Produtos</div>
+        <div class="table-desc">cadastro e gerenciamento do cardápio</div>
+      </div>
+      <div class="action-row">
+        <button onclick="toggleForm('formProduto')" id="btnToggleProduto">+ cadastrar produto</button>
+        <button class="refresh-btn" onclick="loadProdutos()">↻ atualizar</button>
+      </div>
+    </div>
+
+    <!-- Formulário inline de produto -->
+    <div class="form-panel" id="formProduto">
+      <div class="form-panel-title" id="formProdutoTitle">novo produto</div>
+      <div class="form-fields">
+        <input type="hidden" id="produtoId"/>
+        <input type="text" id="produtoNome" placeholder="nome do produto"/>
+        <input type="number" id="produtoPreco" placeholder="preço (ex: 25.00)" step="0.01" min="0"/>
+        <select id="produtoCategoria">
+          <option value="">selecione a categoria</option>
+          <option value="1">Bebidas</option>
+          <option value="2">Petiscos</option>
+          <option value="3">Pratos Principais</option>
+          <option value="4">Sobremesas</option>
+          <option value="5">Drinks</option>
+        </select>
+        <input type="text" id="produtoDescricao" placeholder="descrição (opcional)"/>
+      </div>
+      <div style="margin-top:12px;" class="action-row">
+        <button onclick="salvarProduto()" id="btnSalvarProduto">salvar produto</button>
+        <button class="secondary" onclick="cancelarFormProduto()">cancelar</button>
+      </div>
+      <div class="result-box" id="resultProduto" style="margin-top:10px; display:none;"></div>
+    </div>
+
+    <div id="tabelaProdutos">
+      <div class="loading"><div class="spinner"></div> carregando...</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       FUNCIONALIDADES — GESTÃO DE COMANDAS
+  ═══════════════════════════════════════════ -->
+  <div class="table-card">
+    <div class="table-header">
+      <div>
+        <div class="table-title">Gestão de Comandas</div>
+        <div class="table-desc">abertura e controle de comandas por mesa</div>
+      </div>
+      <div class="action-row">
+        <button onclick="toggleForm('formComanda')" id="btnToggleComanda">+ abrir comanda</button>
+        <button class="refresh-btn" onclick="loadComandas()">↻ atualizar</button>
+      </div>
+    </div>
+
+    <!-- Formulário inline de comanda -->
+    <div class="form-panel" id="formComanda">
+      <div class="form-panel-title" id="formComandaTitle">nova comanda</div>
+      <div class="form-fields">
+        <input type="hidden" id="comandaId"/>
+        <select id="comandaCliente">
+          <option value="">selecione o cliente</option>
+        </select>
+        <input type="number" id="comandaMesa" placeholder="número da mesa (ex: 3)" min="1"/>
+        <select id="comandaStatus">
+          <option value="aberta">aberta</option>
+          <option value="fechada">fechada</option>
+          <option value="cancelada">cancelada</option>
+        </select>
+      </div>
+      <div style="margin-top:12px;" class="action-row">
+        <button onclick="salvarComanda()" id="btnSalvarComanda">abrir comanda</button>
+        <button class="secondary" onclick="cancelarFormComanda()">cancelar</button>
+      </div>
+      <div class="result-box" id="resultComanda" style="margin-top:10px; display:none;"></div>
+    </div>
+
+    <div id="tabelaComandas">
+      <div class="loading"><div class="spinner"></div> carregando...</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       RECURSOS AVANÇADOS
+  ═══════════════════════════════════════════ -->
+  <div class="section-title">recursos avançados</div>
+  <div class="func-grid">
+
+    <div class="func-card">
+      <div class="func-name">Calcular Total da Comanda</div>
+      <div class="func-desc">Soma preço × quantidade de todos os itens da comanda. Útil para exibir o total da conta antes do pagamento.</div>
+      <div class="input-row">
+        <input type="number" id="inputComanda" placeholder="id da comanda (ex: 1)" min="1"/>
+        <button onclick="calcularTotal()">calcular</button>
+      </div>
+      <div class="result-box" id="resultTotal">—</div>
+    </div>
+
+    <div class="func-card">
+      <div class="func-name">Consultar Idade do Cliente</div>
+      <div class="func-desc">Calcula a idade do cliente pela data de nascimento. Útil para validação de maioridade na venda de bebidas.</div>
+      <div class="input-row">
+        <input type="number" id="inputClienteId" placeholder="id do cliente (ex: 1)" min="1"/>
+        <button onclick="calcularIdade()">consultar</button>
+      </div>
+      <div class="result-box" id="resultIdade">—</div>
+    </div>
+
+    <div class="func-card">
+      <div class="func-name">Atualizar Salário</div>
+      <div class="func-desc">Atualiza o salário de um funcionário pelo CPF. O histórico salarial é registrado automaticamente.</div>
+      <div class="salary-form">
+        <input type="text" id="inputCPF" placeholder="CPF (somente números, ex: 11111111111)" maxlength="11"/>
+        <input type="number" id="inputSalario" placeholder="novo salário (ex: 3200.00)" step="0.01" min="0"/>
+        <div class="input-row">
+          <button onclick="atualizarSalario()" style="flex:1">atualizar salário</button>
+        </div>
+        <div class="result-box" id="resultSalario">—</div>
+      </div>
+    </div>
+
+    <div class="func-card">
+      <div class="func-name">Histórico Salarial</div>
+      <div class="func-desc">Registros gerados automaticamente toda vez que um salário é alterado.</div>
+      <div id="logSalario">
+        <div class="loading"><div class="spinner"></div> carregando...</div>
+      </div>
+      <button class="secondary" style="margin-top:12px; width:100%" onclick="loadLogSalario()">↻ atualizar histórico</button>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       VIEWS ANALÍTICAS
+  ═══════════════════════════════════════════ -->
+  <div class="section-title">views analíticas</div>
+
   <div class="table-card">
     <div class="table-header">
       <div>
@@ -361,73 +601,17 @@
     </div>
   </div>
 
-  <!-- PRODUTOS ACIMA DA MÉDIA (VIEW) -->
-  <div class="section-title">view · vw_produtos_acima_media</div>
   <div class="table-card">
     <div class="table-header">
       <div>
-        <div class="table-title">Produtos Acima da Média de Preço</div>
-        <div class="table-desc">itens premium do cardápio</div>
+        <div class="table-title">Produtos Premium</div>
+        <div class="table-desc">itens acima da média de preço do cardápio</div>
       </div>
       <button class="refresh-btn" onclick="loadProdutosMedia()">↻ atualizar</button>
     </div>
     <div id="tabelaProdutosMedia">
       <div class="loading"><div class="spinner"></div> carregando...</div>
     </div>
-  </div>
-
-  <!-- FUNÇÕES -->
-  <div class="section-title">funções SQL</div>
-  <div class="func-grid">
-
-    <div class="func-card">
-      <div class="func-name">calcular_total_comanda(id)</div>
-      <div class="func-desc">Soma preco × quantidade de todos os itens da comanda. Útil para exibir o total da conta antes do pagamento.</div>
-      <div class="input-row">
-        <input type="number" id="inputComanda" placeholder="id_comanda (ex: 1)" min="1"/>
-        <button onclick="calcularTotal()">calcular</button>
-      </div>
-      <div class="result-box" id="resultTotal">—</div>
-    </div>
-
-    <div class="func-card">
-      <div class="func-name">calcular_idade_cliente(data)</div>
-      <div class="func-desc">Calcula a idade do cliente pela data de nascimento. Útil para validação de maioridade na venda de bebidas.</div>
-      <div class="input-row">
-        <input type="number" id="inputClienteId" placeholder="id_cliente (ex: 1)" min="1"/>
-        <button onclick="calcularIdade()">calcular</button>
-      </div>
-      <div class="result-box" id="resultIdade">—</div>
-    </div>
-
-  </div>
-
-  <!-- PROCEDIMENTO + TRIGGER LOG -->
-  <div class="section-title">procedimento · trigger log</div>
-  <div class="func-grid">
-
-    <div class="func-card">
-      <div class="func-name">atualizar_salario_funcionario(cpf, valor)</div>
-      <div class="func-desc">Chama o procedimento de atualização de salário. O trigger log_alteracao_salario registra a mudança automaticamente.</div>
-      <div class="salary-form">
-        <input type="text" id="inputCPF" placeholder="CPF (somente números, ex: 11111111111)" maxlength="11"/>
-        <input type="number" id="inputSalario" placeholder="novo salário (ex: 3200.00)" step="0.01" min="0"/>
-        <div class="input-row">
-          <button onclick="atualizarSalario()" style="flex:1">atualizar salário</button>
-        </div>
-        <div class="result-box" id="resultSalario">—</div>
-      </div>
-    </div>
-
-    <div class="func-card">
-      <div class="func-name">log_salario · trigger AFTER UPDATE</div>
-      <div class="func-desc">Registros gerados automaticamente pelo trigger toda vez que um salário é alterado.</div>
-      <div id="logSalario">
-        <div class="loading"><div class="spinner"></div> carregando...</div>
-      </div>
-      <button class="secondary" style="margin-top:12px; width:100%" onclick="loadLogSalario()">↻ atualizar log</button>
-    </div>
-
   </div>
 
 </main>
@@ -455,12 +639,12 @@ async function loadKPIs() {
     const [clientes, produtos, comandas, funcionarios] = await Promise.all([
       fetch('/cliente').then(r => r.json()),
       fetch('/produto').then(r => r.json()),
-      fetch('/dashboard/comandas-abertas').then(r => r.json()).catch(() => []),
+	  fetch('/dashboard/comandas-abertas/count').then(r => r.json()).catch(() => []),
       fetch('/dashboard/funcionarios').then(r => r.json()).catch(() => []),
     ]);
     document.getElementById('kpiClientes').textContent = clientes.length;
     document.getElementById('kpiProdutos').textContent = produtos.length;
-    document.getElementById('kpiAbertas').textContent = comandas.length ?? '—';
+	document.getElementById('kpiAbertas').textContent =comandas.total ?? '—';;
     document.getElementById('kpiFuncionarios').textContent = funcionarios.length ?? '—';
     renderCharts(produtos);
   } catch(e) {
@@ -470,7 +654,6 @@ async function loadKPIs() {
 
 // ─── CHARTS ───────────────────────────────────────────────
 function renderCharts(produtos) {
-  // Produtos por categoria (agrupa pelo id_categoria)
   const catCount = {};
   const catNames = { 1:'Bebidas', 2:'Petiscos', 3:'Pratos', 4:'Sobremesas', 5:'Drinks' };
   produtos.forEach(p => {
@@ -492,7 +675,6 @@ function renderCharts(produtos) {
     }
   });
 
-  // Preços
   const avg = produtos.reduce((s,p) => s + p.preco, 0) / (produtos.length || 1);
   new Chart(document.getElementById('chartPrecos'), {
     type: 'bar',
@@ -519,6 +701,204 @@ function renderCharts(produtos) {
   });
 }
 
+// ─── HELPERS DE FORM ──────────────────────────────────────
+function toggleForm(id) {
+  const panel = document.getElementById(id);
+  panel.classList.toggle('open');
+  if (id === 'formComanda' && panel.classList.contains('open')) {
+    popularSelectClientes();
+  }
+}
+
+function showResult(elId, msg, isError = false) {
+  const el = document.getElementById(elId);
+  el.style.display = 'block';
+  el.textContent = msg;
+  el.style.color = isError ? 'var(--accent3)' : 'var(--accent2)';
+}
+
+// ─── CRUD: CLIENTES ───────────────────────────────────────
+async function loadClientes() {
+  const el = document.getElementById('tabelaClientes');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div> carregando...</div>';
+  try {
+    const data = await fetch('/cliente').then(r => r.json());
+    if (!data.length) { el.innerHTML = '<div class="loading">nenhum cliente cadastrado</div>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr><th>id</th><th>nome</th><th>data de nascimento</th><th>ações</th></tr></thead>
+      <tbody>${data.map(c => `<tr>
+        <td>${c.id_cliente}</td>
+        <td>${c.nome}</td>
+        <td>${c.data_nascimento || '—'}</td>
+        <td>
+          <button class="btn-edit" onclick="editarCliente(${c.id_cliente}, '${escapeStr(c.nome)}', '${c.data_nascimento||''}')">editar</button>
+          <button class="btn-del" onclick="removerCliente(${c.id_cliente})">remover</button>
+        </td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  } catch { el.innerHTML = '<div class="loading error">erro ao carregar clientes</div>'; }
+}
+
+function cancelarFormCliente() {
+  document.getElementById('formCliente').classList.remove('open');
+  limparFormCliente();
+}
+
+function limparFormCliente() {
+  document.getElementById('clienteId').value = '';
+  document.getElementById('clienteNome').value = '';
+  // Removidos os seletores de CPF e Telefone que causavam erro por não existirem no HTML
+  document.getElementById('clienteNascimento').value = '';
+  document.getElementById('formClienteTitle').textContent = 'novo cliente';
+  document.getElementById('btnSalvarCliente').textContent = 'salvar cliente';
+  const r = document.getElementById('resultCliente');
+  r.style.display = 'none'; r.textContent = '';
+}
+
+function editarCliente(id, nome, nascimento) {
+  document.getElementById('clienteId').value = id;
+  document.getElementById('clienteNome').value = nome;
+  // Removidos parâmetros inexistentes CPF e Telefone
+  document.getElementById('clienteNascimento').value = nascimento;
+  document.getElementById('formClienteTitle').textContent = `editando cliente #${id}`;
+  document.getElementById('btnSalvarCliente').textContent = 'atualizar cliente';
+  document.getElementById('formCliente').classList.add('open');
+  document.getElementById('formCliente').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function salvarCliente() {
+  const id = document.getElementById('clienteId').value;
+  
+  // CORREÇÃO: Mapeando os nomes idênticos aos atributos da classe Cliente.java
+  const body = {
+    nome: document.getElementById('clienteNome').value.trim(),
+    data_nascimento: document.getElementById('clienteNascimento').value // Alterado de dataNascimento para data_nascimento
+  };
+  
+  if (!body.nome) { showResult('resultCliente', 'informe o nome do cliente', true); return; }
+  if (id) {
+    body.id_cliente = parseInt(id);
+  }
+
+  try {
+    const r = await fetch('/cliente', {
+      method: id ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const txt = await r.text();
+    showResult('resultCliente', txt);
+    if (r.ok) {
+      setTimeout(() => { cancelarFormCliente(); loadClientes(); loadKPIs(); }, 800);
+    }
+  } catch { showResult('resultCliente', 'erro ao salvar cliente', true); }
+}
+
+async function removerCliente(id) {
+  if (!confirm(`Remover cliente #${id}?`)) return;
+  try {
+    const r = await fetch(`/cliente/${id}`, { method: 'DELETE' });
+    const txt = await r.text();
+    alert(txt);
+    loadClientes(); loadKPIs();
+  } catch { alert('Erro ao remover cliente'); }
+}
+
+// ─── CRUD: PRODUTOS ───────────────────────────────────────
+async function loadProdutos() {
+  const el = document.getElementById('tabelaProdutos');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div> carregando...</div>';
+  try {
+    const data = await fetch('/produto').then(r => r.json());
+    if (!data.length) { el.innerHTML = '<div class="loading">nenhum produto cadastrado</div>'; return; }
+    const catNames = { 1:'Bebidas', 2:'Petiscos', 3:'Pratos Principais', 4:'Sobremesas', 5:'Drinks' };
+    el.innerHTML = `<table>
+      <thead><tr><th>id</th><th>nome</th><th>preço</th><th>categoria</th><th>ações</th></tr></thead>
+      <tbody>${data.map(p => {
+        const pid = p.id_produto ?? p.id;
+        return `<tr>
+          <td>${pid}</td>
+          <td>${p.nome}</td>
+          <td style="color:var(--accent)">R$ ${Number(p.preco).toFixed(2)}</td>
+          <td>${catNames[p.id_categoria] || p.id_categoria || '—'}</td>
+          <td>
+            <button class="btn-edit" onclick="editarProduto(${pid}, '${escapeStr(p.nome)}', ${p.preco}, ${p.id_categoria||0}, '${escapeStr(p.descricao||'')}')">editar</button>
+            <button class="btn-del" onclick="removerProduto(${pid})">remover</button>
+          </td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  } catch { el.innerHTML = '<div class="loading error">erro ao carregar produtos</div>'; }
+}
+
+function cancelarFormProduto() {
+  document.getElementById('formProduto').classList.remove('open');
+  limparFormProduto();
+}
+
+function limparFormProduto() {
+  document.getElementById('produtoId').value = '';
+  document.getElementById('produtoNome').value = '';
+  document.getElementById('produtoPreco').value = '';
+  document.getElementById('produtoCategoria').value = '';
+  document.getElementById('produtoDescricao').value = '';
+  document.getElementById('formProdutoTitle').textContent = 'novo produto';
+  document.getElementById('btnSalvarProduto').textContent = 'salvar produto';
+  const r = document.getElementById('resultProduto');
+  r.style.display = 'none'; r.textContent = '';
+}
+
+function editarProduto(id, nome, preco, categoria, descricao) {
+  document.getElementById('produtoId').value = id;
+  document.getElementById('produtoNome').value = nome;
+  document.getElementById('produtoPreco').value = preco;
+  document.getElementById('produtoCategoria').value = categoria;
+  document.getElementById('produtoDescricao').value = descricao;
+  document.getElementById('formProdutoTitle').textContent = `editando produto #${id}`;
+  document.getElementById('btnSalvarProduto').textContent = 'atualizar produto';
+  document.getElementById('formProduto').classList.add('open');
+  document.getElementById('formProduto').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function salvarProduto() {
+  const id = document.getElementById('produtoId').value;
+  const body = {
+    nome: document.getElementById('produtoNome').value.trim(),
+    preco: parseFloat(document.getElementById('produtoPreco').value),
+    id_categoria: parseInt(document.getElementById('produtoCategoria').value),
+    descricao: document.getElementById('produtoDescricao').value.trim()
+  };
+  if (!body.nome) { showResult('resultProduto', 'informe o nome do produto', true); return; }
+  if (!body.preco || isNaN(body.preco)) { showResult('resultProduto', 'informe um preço válido', true); return; }
+  if (id) {
+    body.id_produto = parseInt(id);
+    body.id = parseInt(id); // compatibilidade com ambos os mapeamentos
+  }
+
+  try {
+    const r = await fetch('/produto', {
+      method: id ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const txt = await r.text();
+    showResult('resultProduto', txt);
+    if (r.ok) {
+      setTimeout(() => { cancelarFormProduto(); loadProdutos(); loadKPIs(); }, 800);
+    }
+  } catch { showResult('resultProduto', 'erro ao salvar produto', true); }
+}
+
+async function removerProduto(id) {
+  if (!confirm(`Remover produto #${id}?`)) return;
+  try {
+    const r = await fetch(`/produto/${id}`, { method: 'DELETE' });
+    const txt = await r.text();
+    alert(txt);
+    loadProdutos(); loadKPIs();
+  } catch { alert('Erro ao remover produto'); }
+}
+
 // ─── VIEW: COMANDAS ABERTAS ───────────────────────────────
 async function loadComandasAbertas() {
   const el = document.getElementById('tabelaComandasAbertas');
@@ -539,10 +919,10 @@ async function loadComandasAbertas() {
         <td><span class="badge badge-green">${r.status}</span></td>
       </tr>`).join('')}</tbody>
     </table>`;
-  } catch { el.innerHTML = '<div class="loading error">endpoint /dashboard/comandas-abertas não encontrado — adicione no Java</div>'; }
+  } catch { el.innerHTML = '<div class="loading error">endpoint /dashboard/comandas-abertas não encontrado</div>'; }
 }
 
-// ─── VIEW: PRODUTOS ACIMA DA MÉDIA ───────────────────────
+// ─── VIEW: PRODUTOS PREMIUM ───────────────────────────────
 async function loadProdutosMedia() {
   const el = document.getElementById('tabelaProdutosMedia');
   el.innerHTML = '<div class="loading"><div class="spinner"></div> carregando...</div>';
@@ -558,10 +938,10 @@ async function loadProdutosMedia() {
         <td>${r.categoria}</td>
       </tr>`).join('')}</tbody>
     </table>`;
-  } catch { el.innerHTML = '<div class="loading error">endpoint /dashboard/produtos-acima-media não encontrado — adicione no Java</div>'; }
+  } catch { el.innerHTML = '<div class="loading error">endpoint /dashboard/produtos-acima-media não encontrado</div>'; }
 }
 
-// ─── FUNÇÃO: TOTAL COMANDA ────────────────────────────────
+// ─── RECURSO: TOTAL COMANDA ───────────────────────────────
 async function calcularTotal() {
   const id = document.getElementById('inputComanda').value;
   if (!id) { document.getElementById('resultTotal').textContent = 'informe o id da comanda'; return; }
@@ -573,11 +953,11 @@ async function calcularTotal() {
   } catch { document.getElementById('resultTotal').textContent = 'endpoint /dashboard/total-comanda/{id} não encontrado'; }
 }
 
-// ─── FUNÇÃO: IDADE CLIENTE ────────────────────────────────
+// ─── RECURSO: IDADE CLIENTE ───────────────────────────────
 async function calcularIdade() {
   const id = document.getElementById('inputClienteId').value;
   if (!id) { document.getElementById('resultIdade').textContent = 'informe o id do cliente'; return; }
-  document.getElementById('resultIdade').textContent = 'calculando...';
+  document.getElementById('resultIdade').textContent = 'consultando...';
   try {
     const r = await fetch(`/dashboard/idade-cliente/${id}`);
     const txt = await r.text();
@@ -585,7 +965,7 @@ async function calcularIdade() {
   } catch { document.getElementById('resultIdade').textContent = 'endpoint /dashboard/idade-cliente/{id} não encontrado'; }
 }
 
-// ─── PROCEDIMENTO: ATUALIZAR SALÁRIO ─────────────────────
+// ─── RECURSO: ATUALIZAR SALÁRIO ───────────────────────────
 async function atualizarSalario() {
   const cpf = document.getElementById('inputCPF').value.trim();
   const sal = document.getElementById('inputSalario').value;
@@ -599,11 +979,11 @@ async function atualizarSalario() {
     });
     const txt = await r.text();
     document.getElementById('resultSalario').textContent = txt;
-    loadLogSalario(); // atualiza log automaticamente
+    loadLogSalario();
   } catch { document.getElementById('resultSalario').textContent = 'endpoint /dashboard/atualizar-salario não encontrado'; }
 }
 
-// ─── LOG SALÁRIO (TRIGGER) ────────────────────────────────
+// ─── RECURSO: HISTÓRICO SALARIAL ─────────────────────────
 async function loadLogSalario() {
   const el = document.getElementById('logSalario');
   try {
@@ -620,9 +1000,129 @@ async function loadLogSalario() {
   } catch { el.innerHTML = '<div class="loading error">endpoint /dashboard/log-salario não encontrado</div>'; }
 }
 
+// ─── CRUD: COMANDAS ───────────────────────────────────────
+async function loadComandas() {
+  const el = document.getElementById('tabelaComandas');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div> carregando...</div>';
+  try {
+    const [comandas, clientes] = await Promise.all([
+      fetch('/comanda').then(r => r.json()),
+      fetch('/cliente').then(r => r.json())
+    ]);
+    const clienteMap = {};
+    clientes.forEach(c => {
+      const chave = c.id_cliente ?? c.id;
+      clienteMap[chave] = c.nome;
+    });
+
+    if (!comandas.length) { el.innerHTML = '<div class="loading">nenhuma comanda cadastrada</div>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr><th>id</th><th>cliente</th><th>mesa</th><th>status</th><th>ações</th></tr></thead>
+      <tbody>${comandas.map(c => `<tr>
+        <td>#${c.id_comanda}</td>
+        <td>${clienteMap[c.id_cliente] || `cliente #${c.id_cliente}`}</td>
+        <td>mesa ${c.id_mesa}</td>
+        <td><span class="badge ${c.status === 'aberta' ? 'badge-green' : c.status === 'cancelada' ? 'badge-yellow' : 'badge-red'}">${c.status}</span></td>
+        <td>
+          <button class="btn-edit" onclick="editarComanda(${c.id_comanda}, ${c.id_cliente}, ${c.id_mesa}, '${c.status}')">editar</button>
+          <button class="btn-del" onclick="removerComanda(${c.id_comanda})">remover</button>
+        </td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  } catch { el.innerHTML = '<div class="loading error">erro ao carregar comandas</div>'; }
+}
+
+async function popularSelectClientes() {
+  try {
+    const clientes = await fetch('/cliente').then(r => r.json());
+    const sel = document.getElementById('comandaCliente');
+    const valorAtual = sel.value;
+    sel.innerHTML = '<option value="">selecione o cliente</option>';
+    clientes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id_cliente ?? c.id;
+      opt.textContent = `${c.nome} (#${c.id_cliente ?? c.id})`;
+      sel.appendChild(opt);
+    });
+    if (valorAtual) sel.value = valorAtual;
+  } catch { /* silencioso */ }
+}
+
+function cancelarFormComanda() {
+  document.getElementById('formComanda').classList.remove('open');
+  limparFormComanda();
+}
+
+function limparFormComanda() {
+  document.getElementById('comandaId').value = '';
+  document.getElementById('comandaCliente').value = '';
+  document.getElementById('comandaMesa').value = '';
+  document.getElementById('comandaStatus').value = 'aberta';
+  document.getElementById('formComandaTitle').textContent = 'nova comanda';
+  document.getElementById('btnSalvarComanda').textContent = 'abrir comanda';
+  const r = document.getElementById('resultComanda');
+  r.style.display = 'none'; r.textContent = '';
+}
+
+function editarComanda(id, id_cliente, id_mesa, status) {
+  document.getElementById('comandaId').value = id;
+  document.getElementById('comandaCliente').value = id_cliente;
+  document.getElementById('comandaMesa').value = id_mesa;
+  document.getElementById('comandaStatus').value = status;
+  document.getElementById('formComandaTitle').textContent = `editando comanda #${id}`;
+  document.getElementById('btnSalvarComanda').textContent = 'salvar alterações';
+  document.getElementById('formComanda').classList.add('open');
+  popularSelectClientes();
+  document.getElementById('formComanda').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function salvarComanda() {
+  const id = document.getElementById('comandaId').value;
+  const id_cliente = document.getElementById('comandaCliente').value;
+  const id_mesa = document.getElementById('comandaMesa').value;
+  const status = document.getElementById('comandaStatus').value;
+
+  if (!id_cliente) { showResult('resultComanda', 'selecione o cliente', true); return; }
+  if (!id_mesa) { showResult('resultComanda', 'informe o número da mesa', true); return; }
+
+  const body = { id_cliente: parseInt(id_cliente), id_mesa: parseInt(id_mesa), status };
+  if (id) body.id_comanda = parseInt(id);
+
+  try {
+    const r = await fetch('/comanda', {
+      method: id ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const txt = await r.text();
+    showResult('resultComanda', txt);
+    if (r.ok) {
+      setTimeout(() => { cancelarFormComanda(); loadComandas(); loadKPIs(); }, 800);
+    }
+  } catch { showResult('resultComanda', 'erro ao salvar comanda', true); }
+}
+
+async function removerComanda(id) {
+  if (!confirm(`Remover comanda #${id}?`)) return;
+  try {
+    const r = await fetch(`/comanda/${id}`, { method: 'DELETE' });
+    const txt = await r.text();
+    alert(txt);
+    loadComandas(); loadKPIs();
+  } catch { alert('Erro ao remover comanda'); }
+}
+
+// ─── UTILS ────────────────────────────────────────────────
+function escapeStr(s) {
+  return String(s).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
 // ─── INIT ─────────────────────────────────────────────────
 checkStatus();
 loadKPIs();
+loadClientes();
+loadProdutos();
+loadComandas();
 loadComandasAbertas();
 loadProdutosMedia();
 loadLogSalario();

@@ -39,6 +39,25 @@ public class DashboardController {
         }
         return lista;
     }
+    
+    @GetMapping("/comandas-abertas/count")
+    public Map<String,Integer> contarComandasAbertas() throws Exception {
+
+        String sql =
+            "SELECT COUNT(DISTINCT id_comanda) AS total " +
+            "FROM vw_comandas_abertas";
+        try(
+            Connection conn = ConnectionFactory.getConnection();
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(sql)
+        ){
+            rs.next();
+            Map<String,Integer> resp = new HashMap<>();
+            resp.put("total",rs.getInt("total")
+            );
+            return resp;
+        }
+    }
  
     // ─── VIEW: vw_produtos_acima_media ────────────────────────
     @GetMapping("/produtos-acima-media")
@@ -144,5 +163,4 @@ public class DashboardController {
         }
         return lista;
     }
-
 }
