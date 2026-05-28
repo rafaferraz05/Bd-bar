@@ -46,7 +46,7 @@ private static final String PASS = "SUA_SENHA";
 4. Acessar no navegador:
 
 ```text
-http://localhost:8080/index.html
+http://localhost:8080/dashboard.html
 ```
 
 Para acessar o dashboard:
@@ -149,7 +149,6 @@ server.port=8081
 Depois acessar:
 
 ```text
-http://localhost:8081/index.html
 http://localhost:8081/dashboard.html
 ```
 
