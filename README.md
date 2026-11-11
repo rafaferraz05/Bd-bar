@@ -1,6 +1,6 @@
 # Projeto Bar
 
-Sistema desenvolvido com Spring Boot, JDBC e MySQL, com interface HTML simples para operações CRUD.
+Sistema desenvolvido com Spring Boot, JDBC e MySQL, com interface HTML simples para operações CRUD..
 
 ## Tecnologias usadas
 
